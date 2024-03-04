@@ -28,4 +28,4 @@ jobs:
         uses: docker/build-push-action@v3
         with:
           push: true
-          tags: ghcr.io/drjuchunkoo/transpal-python:latest
+          tags: ghcr.io/drjuchunkoo/transpal-transcribe:latest
