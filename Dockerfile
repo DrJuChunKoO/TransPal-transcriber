@@ -6,8 +6,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends apt-utils
 RUN apt-get -y install curl
 RUN apt-get install libgomp1 libsndfile1 -y
 # Install the required packages
-RUN pip install torch==2.1.1 torchaudio==2.1.1 pyannote.audio==3.1.1
-RUN pip install fastapi hypercorn requests python-multipart openai slack_bolt
+RUN pip install requests python-multipart slack_bolt modal numpy
 
 FROM base as builder
 # Set the working directory in the container
@@ -18,5 +17,8 @@ ENV OPENAI_API_KEY=YOUR_OPENAI_API_KEY
 ENV SLACK_BOT_TOKEN=YOUR_SLACK_BOT_TOKEN
 ENV SLACK_BOT_CHANNEL=YOUR_SLACK_BOT_CHANNEL
 ENV SLACK_APP_TOKEN=YOUR_SLACK_APP_TOKEN
+ENV MODAL_TOKEN_ID=YOUR_MODAL_TOKEN_ID
+ENV MODAL_TOKEN_SECRET=YOUR_MODAL_TOKEN_SECRET
 # ENV
-CMD python main.py
+CMD ["sh", "-c", "modal deploy run_whisperx.py && python main.py"]
+

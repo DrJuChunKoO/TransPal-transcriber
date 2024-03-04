@@ -1,26 +1,25 @@
-
-from slack_bolt import App
+import requests
 from slack_bolt.adapter.socket_mode import SocketModeHandler
+from slack_bolt import App
+import random
+import string
+import json
+import numpy as np
+import os
 import logging
 import subprocess
-import os
-import requests
 import time
-import torch
-import subprocess
-from openai import OpenAI
-from pyannote.audio import Pipeline
+import modal
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.DEBUG)
 
-pipeline = Pipeline.from_pretrained(
-    "pyannote/speaker-diarization-3.1",
-    use_auth_token=os.environ.get("HUGGINGFACE_ACCESS_TOKEN"))
-openai_client = OpenAI(
-    api_key=os.environ.get("OPENAI_API_KEY"),
-)
+logger = logging.getLogger(__name__)
+logger.setLevel(logging.DEBUG)
+
+run_whisperx = modal.Function.lookup('transpal-whisperx', "run_whisperx")
 
 SLACK_BOT_CHANNEL = os.environ["SLACK_BOT_CHANNEL"]
+
 app = App(token=os.environ["SLACK_BOT_TOKEN"])
 
 
@@ -48,81 +47,78 @@ def handle_message_events(body):
             temp_input_filename = f"temp-{time.time_ns()}.{file_extension}"
             with open(temp_input_filename, "wb") as file_object:
                 file_object.write(r.content)
-            download_time = time.time() - start_time
             # convert to wav
             app.client.chat_postMessage(
-                token=os.environ.get("SLACK_BOT_TOKEN"),
                 channel=channel_id,
                 text=f"正在處裡中⋯⋯",
                 thread_ts=thread_ts,
             )
-            temp_wav_filename_wav = f"temp-{time.time_ns()}_ff.wav"
-            subprocess.run(
-                [
+
+            try:
+                # Launches a subprocess to decode audio while down-mixing and resampling as necessary.
+                # Requires the ffmpeg CLI to be installed.
+                cmd = [
                     "ffmpeg",
+                    "-nostdin",
+                    "-threads",
+                    "0",
                     "-i",
                     temp_input_filename,
-                    "-ar",
-                    "16000",
+                    "-f",
+                    "s16le",
                     "-ac",
                     "1",
-                    "-c:a",
+                    "-acodec",
                     "pcm_s16le",
-                    temp_wav_filename_wav,
+                    "-ar",
+                    str(16000),
+                    "-",
                 ]
-            )
+                out = subprocess.run(
+                    cmd, capture_output=True, check=True).stdout
+            except subprocess.CalledProcessError as e:
+                raise RuntimeError(
+                    f"Failed to load audio: {e.stderr.decode()}") from e
+
+            file_float32 = np.frombuffer(
+                out, np.int16).flatten().astype(np.float32) / 32768.0
+
             # remove the original file
             if os.path.exists(temp_input_filename):
                 os.remove(temp_input_filename)
                 print("Removed temp_input_filename")
-            transcode_time = time.time() - start_time - download_time
-            logger.info("Running pipeline")
-            diarization = pipeline(temp_wav_filename_wav)
-            diarization_time = time.time() - start_time - download_time - transcode_time
-            logger.info("Running Whisper")
-            audio_file = open(temp_wav_filename_wav, "rb")
-            transcript = openai_client.audio.transcriptions.create(
-                model="whisper-1",
-                file=audio_file,
-                response_format='verbose_json',
-                timestamp_granularities=["segment"],
-            )
-            transcript_time = time.time() - start_time - download_time - \
-                transcode_time - diarization_time
-            diarization_result = []
-            for speech_turn, track, speaker in diarization.itertracks(yield_label=True):
-                diarization_result.append(
-                    {
-                        "start": speech_turn.start,
-                        "end": speech_turn.end,
-                        "speaker": speaker,
-                    }
-                )
+
+            whisperx_result = run_whisperx.remote(file_float32)
             result = {
                 "version": "1.0",
                 "info": {
                     "filename": filename,
                 },
                 "raw": {
-                    "diarization": diarization_result,
-                    "transcript": transcript.segments,
                 },
+                "content": []
             }
+            for segment in whisperx_result:
+                random_id = ''.join(random.choices(string.ascii_letters, k=6))
+                result["content"].append({
+                    "id":  random_id,
+                    "start": segment["start"],
+                    "end": segment["end"],
+                    "type": "speech",
+                    "speaker": segment["speaker"],
+                    "text": segment["text"]
+                })
 
-            logger.info("Removing temp files")
-            # remove the temp files
-            if os.path.exists(temp_wav_filename_wav):
-                os.remove(temp_wav_filename_wav)
             logger.info("Returning result")
             # write the result to a file
             result_filename = f"result-{time.time_ns()}.json"
             with open(result_filename, "w") as file_object:
-                file_object.write(str(result))
+                file_object.write(json.dumps(result))
             # upload the result file
             total_time = time.time() - start_time
             app.client.chat_postMessage(
-                token=os.environ.get("SLACK_BOT_TOKEN"),
                 channel=channel_id,
+                text="轉換完成",
                 blocks=[
                     {
                         "type": "header",
@@ -141,33 +137,16 @@ def handle_message_events(body):
                     {
                         "type": "section",
                         "fields": [
-                                {
-                                    "type": "mrkdwn",
-                                    "text": f"*下載*\n{download_time:.2f} 秒"
-                                },
                             {
-                                    "type": "mrkdwn",
-                                    "text": f"*轉檔*\n{transcode_time:.2f} 秒"
-                                },
-                            {
-                                    "type": "mrkdwn",
-                                    "text": f"*語者分離*\n{diarization_time:.2f} 秒"
-                                },
-                            {
-                                    "type": "mrkdwn",
-                                    "text": f"*音訊轉錄*\n{transcript_time:.2f} 秒"
-                                },
-                            {
-                                    "type": "mrkdwn",
-                                    "text": f"*總耗時*\n{total_time:.2f} 秒"
+                                "type": "mrkdwn",
+                                "text": f"*總耗時*\n{total_time:.2f} 秒"
                             }
                         ]
                     }
                 ],
                 thread_ts=thread_ts,
             )
-            app.client.files_upload(
-                token=os.environ.get("SLACK_BOT_TOKEN"),
+            app.client.files_upload_v2(
                 channels=channel_id,
                 file=result_filename,
                 thread_ts=thread_ts,
@@ -177,7 +156,6 @@ def handle_message_events(body):
                 os.remove(result_filename)
         except Exception as e:
             app.client.chat_postMessage(
-                token=os.environ.get("SLACK_BOT_TOKEN"),
                 channel=channel_id,
                 text=f"發生錯誤：{str(e)}",
                 thread_ts=thread_ts,
@@ -185,13 +163,11 @@ def handle_message_events(body):
 
     else:
         app.client.chat_postMessage(
-            token=os.environ.get("SLACK_BOT_TOKEN"),
             channel=channel_id,
             text=f"不支援的檔案類型：{file_extension}",
             thread_ts=thread_ts,
         )
 
 
-if __name__ == "__main__":
-    SocketModeHandler(
-        app, os.environ["SLACK_APP_TOKEN"]).start()
+SocketModeHandler(
+    app, os.environ["SLACK_APP_TOKEN"]).start()
