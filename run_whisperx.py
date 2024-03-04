@@ -30,7 +30,7 @@ async def run_whisperx(audio):
         })
 
     result = model.transcribe(
-        audio, batch_size=batch_size, language="zh", chunk_size=5)
+        audio, batch_size=batch_size, language="zh", chunk_size=4)
     print(result["segments"])  # before alignment
 
     # delete model if low on GPU resources
