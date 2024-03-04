@@ -29,8 +29,8 @@ docker run \
 
 ### Environment Variables
 
-- SLACK_BOT_TOKEN - Slack bot token
-- SLACK_APP_TOKEN - Slack app token
-- SLACK_BOT_CHANNEL - Watch channel for the bot
-- MODAL_TOKEN_ID - Modal token id
-- MODAL_TOKEN_SECRET - Modal token secret
+- `SLACK_BOT_TOKEN` - Slack bot token
+- `SLACK_APP_TOKEN` - Slack app token
+- `SLACK_BOT_CHANNEL` - Watch channel for the bot
+- `MODAL_TOKEN_ID` - [Modal](https://modal.com/) token id
+- `MODAL_TOKEN_SECRET` - [Modal](https://modal.com/) token secret
