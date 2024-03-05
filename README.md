@@ -15,6 +15,26 @@ WhisperX Slack bot for transcribing audio files
 - Save the Hugging Face token on the secrets page, naming it `my-huggingface-secret`, with the key `HUGGINGFACE_ACCESS_TOKEN`.
 - Get the token id and secret
 
+### Slack API
+
+- Create a new Slack app
+- Go to "Event Subscriptions" and subscribe to `message.channels`
+- Go to "OAuth & Permissions" and add the following scopes:
+  - `chat:write`
+  - `files:read`
+  - `files:write`
+  - `channels:read`
+  - `channels:history`
+  - `groups:history`
+  - `im:history`
+- Get `SLACK_BOT_TOKEN` from "Install App" page (starts with `xoxb-`)
+- Get `SLACK_APP_TOKEN` from "Basic Information" page > "App-Level Tokens" (starts with `xapp-`)
+
+### Slack
+
+- Get `SLACK_BOT_CHANNEL` from the channel you want the bot to watch
+- Add the bot to the channel
+
 ## Deployment
 
 ```bash
