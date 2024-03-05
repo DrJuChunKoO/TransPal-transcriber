@@ -10,8 +10,6 @@ import logging
 import subprocess
 import time
 import modal
-logger = logging.getLogger(__name__)
-logger.setLevel(logging.DEBUG)
 
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.DEBUG)
