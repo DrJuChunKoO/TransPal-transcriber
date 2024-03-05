@@ -23,8 +23,6 @@ app = App(token=os.environ["SLACK_BOT_TOKEN"])
 
 @app.event("message")
 def handle_message_events(body):
-    print(body)
-    logger.info(body)
     channel_id = body["event"]["channel"]
     thread_ts = body["event"]["ts"]
     if channel_id != SLACK_BOT_CHANNEL or body["event"].get("files") is None:
@@ -32,11 +30,12 @@ def handle_message_events(body):
     # check file extension
     filename = body["event"]["files"][0]["name"]
     file_url = body["event"]["files"][0]["url_private_download"]
+    file_mimetype = body["event"]["files"][0]["mimetype"]
     file_extension = filename.split(".")[-1]
 
     # determine the file type as audio or video
-
-    if file_extension in ["mp3", "wav", "flac", "m4a", "mkv", "mp4", "webm"]:
+    # audio/ or video/ or application/octet-stream
+    if file_mimetype.startswith("audio/") or file_mimetype.startswith("video/"):
         try:
             start_time = time.time()
             print(f"Downloading file {filename} ...")
