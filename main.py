@@ -39,6 +39,7 @@ def handle_message_events(body):
     if file_extension in ["mp3", "wav", "flac", "m4a", "mkv", "mp4", "webm"]:
         try:
             start_time = time.time()
+            print(f"Downloading file {filename} ...")
             # download the file
             r = requests.get(file_url, headers={
                 "Authorization": f"Bearer {os.environ.get('SLACK_BOT_TOKEN')}"})
