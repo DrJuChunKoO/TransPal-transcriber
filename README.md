@@ -1,4 +1,4 @@
-# TransPal-transcribe
+# TransPal-transcriber
 
 WhisperX Slack bot for transcribing audio files
 
@@ -24,7 +24,7 @@ docker run \
  -e SLACK_BOT_CHANNEL='<SLACK_BOT_CHANNEL_ID>'  \
  -e MODAL_TOKEN_ID='<MODAL_TOKEN_ID>' \
  -e MODAL_TOKEN='<MODAL_TOKEN_SECRET>' \
- ghcr.io/drjuchunkoo/transpal-transcribe:latest
+ ghcr.io/drjuchunkoo/transpal-transcriber:latest
 ```
 
 ### Environment Variables
