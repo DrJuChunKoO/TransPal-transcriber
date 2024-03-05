@@ -34,3 +34,11 @@ docker run \
 - `SLACK_BOT_CHANNEL` - Watch channel for the bot
 - `MODAL_TOKEN_ID` - [Modal](https://modal.com/) token id
 - `MODAL_TOKEN_SECRET` - [Modal](https://modal.com/) token secret
+
+## Tech Stack
+
+- [m-bain/whisperX](https://github.com/m-bain/whisperX)
+- [pyannote/segmentation-3.0](https://hf.co/pyannote/segmentation-3.0)
+- [pyannote/speaker-diarization-3.1](https://hf.co/pyannote-speaker-diarization-3.1)
+- [slackapi/bolt-python](https://github.com/slackapi/bolt-python)
+- [Modal](https://modal.com/)
