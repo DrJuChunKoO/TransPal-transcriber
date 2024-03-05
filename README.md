@@ -7,7 +7,8 @@ WhisperX Slack bot for transcribing audio files
 ### pyannote
 
 - Accept [pyannote/segmentation-3.0](https://hf.co/pyannote/segmentation-3.0) user conditions
-- Accept [pyannote/speaker-diarization-3.1](https://hf.co/pyannote-speaker-diarization-3.1) user conditions
+- Accept [pyannote/speaker-diarization-3.1](https://hf.co/pyannote/speaker-diarization-3.1) user conditions
+- Create `HUGGINGFACE_ACCESS_TOKEN` at [hf.co/settings/tokens](https://hf.co/settings/tokens).
 
 ### modal
 
