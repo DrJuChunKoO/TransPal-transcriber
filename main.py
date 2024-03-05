@@ -98,14 +98,14 @@ def handle_message_events(body):
                 },
                 "content": []
             }
-            for segment in whisperx_result:
+            for segment in whisperx_result["segments"]:
                 random_id = ''.join(random.choices(string.ascii_letters, k=6))
                 result["content"].append({
                     "id":  random_id,
                     "start": segment["start"],
                     "end": segment["end"],
                     "type": "speech",
-                    "speaker": segment["speaker"],
+                    "speaker": segment["speaker"] if "speaker" in segment else 'Unknown',
                     "text": segment["text"]
                 })
 
@@ -121,26 +121,49 @@ def handle_message_events(body):
                 text="轉換完成",
                 blocks=[
                     {
+                        "type": "rich_text",
+                        "elements": [
+                            {
+                                "type": "rich_text_section",
+                                "elements": [
+                                        {
+                                            "type": "emoji",
+                                            "name": "sparkles",
+                                            "unicode": "2728"
+                                        }
+                                ]
+                            }
+                        ]
+                    },
+                    {
                         "type": "header",
                         "text": {
                                 "type": "plain_text",
-                                "text": "✨ 轉換完成"
+                                "text": "轉換完成"
                         }
                     },
                     {
-                        "type": "section",
-                        "text": {
-                                "type": "mrkdwn",
-                                "text": filename
-                        }
+                        "type": "divider"
                     },
                     {
                         "type": "section",
                         "fields": [
                             {
                                 "type": "mrkdwn",
+                                "text": f"*檔案名稱*\n{filename}"
+                            },
+                            {
+                                "type": "mrkdwn",
+                                "text": f"*音訊轉錄*\n{whisperx_result['info']['transcribe_time']:.2f} 秒"
+                            },
+                            {
+                                "type": "mrkdwn",
+                                "text": f"*語者辨識*\n{whisperx_result['info']['diarize_time']:.2f} 秒"
+                            },
+                            {
+                                "type": "mrkdwn",
                                 "text": f"*總耗時*\n{total_time:.2f} 秒"
-                            }
+                            },
                         ]
                     }
                 ],
