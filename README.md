@@ -24,7 +24,7 @@ docker run \
  -e SLACK_BOT_CHANNEL='<SLACK_BOT_CHANNEL_ID>'  \
  -e MODAL_TOKEN_ID='<MODAL_TOKEN_ID>' \
  -e MODAL_TOKEN='<MODAL_TOKEN_SECRET>' \
- transpal
+ ghcr.io/drjuchunkoo/transpal-transcribe:latest
 ```
 
 ### Environment Variables
