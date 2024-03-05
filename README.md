@@ -1,4 +1,4 @@
-# TransPal-python
+# TransPal-transcribe
 
 WhisperX Slack bot for transcribing audio files
 
