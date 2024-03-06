@@ -69,11 +69,11 @@ def handle_message_events(body):
                     "1",
                     "-acodec",
                     "pcm_s16le",
+                    "-af",
+                    "lowpass=5000,highpass=200,volume=4,afftdn=nr=0.01:nt=w",
                     "-ar",
                     str(16000),
-                    "-af",
-                    '"highpass=f=300,asendcmd=0.0 afftdn sn start,asendcmd=1.5 afftdn sn stop,afftdn=nf=-20,dialoguenhance,lowpass=f=3000,volume=4"'
-                    "-",
+                    "-",  # Pipe output to stdout
                 ]
                 out = subprocess.run(
                     cmd, capture_output=True, check=True).stdout
