@@ -62,6 +62,8 @@ def handle_message_events(body):
                     "0",
                     "-i",
                     temp_input_filename,
+                    "-af",
+                    '"highpass=f=300,asendcmd=0.0 afftdn sn start,asendcmd=1.5 afftdn sn stop,afftdn=nf=-20,dialoguenhance,lowpass=f=3000,volume=4"'
                     "-f",
                     "s16le",
                     "-ac",
