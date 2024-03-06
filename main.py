@@ -101,15 +101,17 @@ def handle_message_events(body):
                 "content": []
             }
             for segment in whisperx_result["segments"]:
-                random_id = ''.join(random.choices(string.ascii_letters, k=6))
-                result["content"].append({
-                    "id":  random_id,
-                    "start": segment["start"],
-                    "end": segment["end"],
-                    "type": "speech",
-                    "speaker": segment["speaker"] if "speaker" in segment else 'Unknown',
-                    "text": segment["text"]
-                })
+                if "speaker" in segment:  # only include segments with speaker information
+                    random_id = ''.join(random.choices(
+                        string.ascii_letters, k=6))
+                    result["content"].append({
+                        "id":  random_id,
+                        "start": segment["start"],
+                        "end": segment["end"],
+                        "type": "speech",
+                        "speaker": segment["speaker"],
+                        "text": segment["text"]
+                    })
 
             logger.info("Returning result")
             # write the result to a file
