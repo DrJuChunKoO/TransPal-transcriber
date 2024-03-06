@@ -37,17 +37,7 @@ async def run_whisperx(audio):
 
     transcribe_time = time.time() - start_time
 
-    # 2. Align whisper output
-    model_a, metadata = whisperx.load_align_model(
-        language_code=result["language"], device=device, model_name="StevenLimcorn/wav2vec2-xls-r-300m-zh-TW")
-    result = whisperx.align(
-        result["segments"], model_a, metadata, audio, device, return_char_alignments=False)
-
-    print("Alignment done")
-
-    align_time = time.time() - start_time - transcribe_time
-
-    # 3. Assign speaker labels
+    # 2. Assign speaker labels
     diarize_model = whisperx.DiarizationPipeline(
         use_auth_token=os.environ["HUGGINGFACE_ACCESS_TOKEN"], device=device)
 
@@ -68,7 +58,6 @@ async def run_whisperx(audio):
         "info": {
             "transcribe_time": transcribe_time,
             "diarize_time": diarize_time,
-            "align_time": align_time,
         }
     }
 
