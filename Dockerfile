@@ -3,8 +3,7 @@ FROM python:3.11-slim as base
 COPY --from=mwader/static-ffmpeg:6.1.1 /ffmpeg /usr/local/bin/
 COPY --from=mwader/static-ffmpeg:6.1.1 /ffprobe /usr/local/bin/
 RUN apt-get update && apt-get install -y --no-install-recommends apt-utils
-RUN apt-get -y install curl
-RUN apt-get install libgomp1 libsndfile1 -y
+RUN apt-get -y install curl libgomp1 libsndfile1
 # Install the required packages
 RUN pip install requests python-multipart slack_bolt modal numpy
 
