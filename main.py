@@ -45,6 +45,7 @@ def handle_message_events(body):
             temp_input_filename = f"temp-{time.time_ns()}.{file_extension}"
             with open(temp_input_filename, "wb") as file_object:
                 file_object.write(r.content)
+            download_time = time.time() - start_time
             # convert to wav
             app.client.chat_postMessage(
                 channel=channel_id,
@@ -87,6 +88,7 @@ def handle_message_events(body):
             if os.path.exists(temp_input_filename):
                 os.remove(temp_input_filename)
                 print("Removed temp_input_filename")
+            transcode_time = time.time() - start_time - download_time
 
             whisperx_result = run_whisperx.remote(file_float32)
             result = {
@@ -151,6 +153,14 @@ def handle_message_events(body):
                             {
                                 "type": "mrkdwn",
                                 "text": f"*檔案名稱*\n{filename}"
+                            },
+                            {
+                                "type": "mrkdwn",
+                                "text": f"*下載*\n{download_time:.2f} 秒"
+                            },
+                            {
+                                "type": "mrkdwn",
+                                "text": f"*轉檔*\n{transcode_time:.2f} 秒"
                             },
                             {
                                 "type": "mrkdwn",
