@@ -26,7 +26,7 @@ async def run_whisperx(audio):
     # 1. Transcribe audio to text
     model = whisperx.load_model(
         "large-v3", device, compute_type=compute_type, asr_options={
-            "initial_prompt": "請使用台灣中文",
+            "initial_prompt": "請使用台灣中文，並加入標點符號",
             "no_speech_threshold": 0.5,
             "compression_ratio_threshold": 2.2,
         })
