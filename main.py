@@ -70,7 +70,7 @@ def handle_message_events(body):
                     "-acodec",
                     "pcm_s16le",
                     "-af",
-                    "lowpass=5000,highpass=200,volume=4,afftdn=nr=0.01:nt=w",
+                    "volume=4,afftdn=nr=0.01:nt=w",
                     "-ar",
                     str(16000),
                     "-",  # Pipe output to stdout
