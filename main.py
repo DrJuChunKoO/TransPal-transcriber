@@ -125,25 +125,10 @@ def handle_message_events(body):
                 text="轉換完成",
                 blocks=[
                     {
-                        "type": "rich_text",
-                        "elements": [
-                            {
-                                "type": "rich_text_section",
-                                "elements": [
-                                        {
-                                            "type": "emoji",
-                                            "name": "sparkles",
-                                            "unicode": "2728"
-                                        }
-                                ]
-                            }
-                        ]
-                    },
-                    {
                         "type": "header",
                         "text": {
                                 "type": "plain_text",
-                                "text": "轉換完成"
+                                "text": "✨ 轉換完成"
                         }
                     },
                     {
