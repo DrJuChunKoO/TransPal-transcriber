@@ -47,7 +47,7 @@ async def run_whisperx(audio):
     print(diarize_segments)
     print("Diarization done")
 
-    diarize_time = time.time() - start_time - transcribe_time - align_time
+    diarize_time = time.time() - start_time - transcribe_time
 
     print(f"Transcribe time: {transcribe_time:.2f}s")
     print(f"Diarize time: {diarize_time:.2f}s")
