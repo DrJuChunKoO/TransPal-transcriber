@@ -170,6 +170,10 @@ def handle_message_events(body):
                             },
                             {
                                 "type": "mrkdwn",
+                                "text": f"*音訊對齊*\n{whisperx_result['info']['align_time']:.2f} 秒"
+                            },
+                            {
+                                "type": "mrkdwn",
                                 "text": f"*語者辨識*\n{whisperx_result['info']['diarize_time']:.2f} 秒"
                             },
                             {
