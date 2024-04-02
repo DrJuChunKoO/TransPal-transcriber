@@ -74,8 +74,18 @@ def handle_message_events(body):
             out = subprocess.run(
                 cmd, capture_output=True, check=True).stdout
         except subprocess.CalledProcessError as e:
+            app.client.chat_postMessage(
+                channel=channel_id,
+                text=f"發生錯誤：{str(e)}",
+                thread_ts=thread_ts,
+            )
             raise RuntimeError(
                 f"Failed to load audio: {e.stderr.decode()}") from e
+        app.client.chat_postMessage(
+            channel=channel_id,
+            text=f"音訊轉換完成，開始進行轉錄⋯⋯",
+            thread_ts=thread_ts,
+        )
 
         file_float32 = np.frombuffer(
             out, np.int16).flatten().astype(np.float32) / 32768.0
