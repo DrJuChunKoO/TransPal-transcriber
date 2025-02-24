@@ -1,24 +1,32 @@
-import requests
-from slack_bolt.adapter.socket_mode import SocketModeHandler
+import modal
 from slack_bolt import App
 import random
 import string
 import json
-import numpy as np
 import os
 import logging
-import subprocess
 import time
-import modal
+from dotenv import load_dotenv
 
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.DEBUG)
 
-run_whisperx = modal.Function.lookup('transpal-whisperx', "run_whisperx")
+# 檢查是否在 Cloud Run 上運行
+if "K_SERVICE" not in os.environ:
+    # 本地環境，載入 .env 文件
+    logger.info("Running locally, loading .env file")
+    load_dotenv()
+else:
+    # Cloud Run 環境，直接使用環境變數
+    logger.info("Running on Cloud Run, using environment variables")
+
 
 SLACK_BOT_CHANNEL = os.environ["SLACK_BOT_CHANNEL"]
 
-app = App(token=os.environ["SLACK_BOT_TOKEN"])
+app = App(
+    token=os.environ.get("SLACK_BOT_TOKEN"),
+    signing_secret=os.environ.get("SLACK_SIGNING_SECRET")
+)
 
 
 @app.event("message")
@@ -34,69 +42,18 @@ def handle_message_events(body):
 
     try:
         start_time = time.time()
-        print(f"Downloading file {filename} ...")
-        # download the file
-        r = requests.get(file_url, headers={
-            "Authorization": f"Bearer {os.environ.get('SLACK_BOT_TOKEN')}"})
-        temp_input_filename = f"temp-{time.time_ns()}.{file_extension}"
-        with open(temp_input_filename, "wb") as file_object:
-            file_object.write(r.content)
-        download_time = time.time() - start_time
-        # convert to wav
+
         app.client.chat_postMessage(
             channel=channel_id,
-            text=f"正在處裡中⋯⋯",
+            text=f"開始進行轉錄⋯⋯",
             thread_ts=thread_ts,
         )
-
-        try:
-            # Launches a subprocess to decode audio while down-mixing and resampling as necessary.
-            # Requires the ffmpeg CLI to be installed.
-            cmd = [
-                "ffmpeg",
-                "-nostdin",
-                "-threads",
-                "0",
-                "-i",
-                temp_input_filename,
-                "-f",
-                "s16le",
-                "-ac",
-                "1",
-                "-acodec",
-                "pcm_s16le",
-                "-af",
-                "volume=4,afftdn=nr=0.01:nt=w",
-                "-ar",
-                str(16000),
-                "-",  # Pipe output to stdout
-            ]
-            out = subprocess.run(
-                cmd, capture_output=True, check=True).stdout
-        except subprocess.CalledProcessError as e:
-            app.client.chat_postMessage(
-                channel=channel_id,
-                text=f"發生錯誤：{str(e)}",
-                thread_ts=thread_ts,
-            )
-            raise RuntimeError(
-                f"Failed to load audio: {e.stderr.decode()}") from e
-        app.client.chat_postMessage(
-            channel=channel_id,
-            text=f"音訊轉換完成，開始進行轉錄⋯⋯",
-            thread_ts=thread_ts,
-        )
-
-        file_float32 = np.frombuffer(
-            out, np.int16).flatten().astype(np.float32) / 32768.0
-
-        # remove the original file
-        if os.path.exists(temp_input_filename):
-            os.remove(temp_input_filename)
-            print("Removed temp_input_filename")
-        transcode_time = time.time() - start_time - download_time
-
-        whisperx_result = run_whisperx.remote(file_float32)
+        print(f"transcribe file {filename} ...")
+        transcribe = modal.Function.from_name(
+            "whisperx-transpal", "transcribe")
+        whisperx_result = transcribe.remote(
+            file_url, os.environ.get('SLACK_BOT_TOKEN'))  # 透過實例呼叫方法
+        print(f"transcribe.remote completed, result: {whisperx_result}")
         result = {
             "version": "1.0",
             "info": {
@@ -149,11 +106,11 @@ def handle_message_events(body):
                         },
                         {
                             "type": "mrkdwn",
-                            "text": f"*下載*\n{download_time:.2f} 秒"
+                            "text": f"*下載*\n{whisperx_result['info']['download_time']:.2f} 秒"
                         },
                         {
                             "type": "mrkdwn",
-                            "text": f"*轉檔*\n{transcode_time:.2f} 秒"
+                            "text": f"*轉檔*\n{whisperx_result['info']['transcode_time']:.2f} 秒"
                         },
                         {
                             "type": "mrkdwn",
@@ -188,5 +145,5 @@ def handle_message_events(body):
         )
 
 
-SocketModeHandler(
-    app, os.environ["SLACK_APP_TOKEN"]).start()
+if __name__ == "__main__":
+    app.start(port=int(os.environ.get("PORT", 3000)))

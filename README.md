@@ -38,13 +38,26 @@ WhisperX Slack bot for transcribing audio files
 
 ## Deployment
 
+### Deploy WhisperX
+
+- Add the `HUGGINGFACE_ACCESS_TOKEN` to Modal secrets
+- Install modal on your local machine
+- Run the following command
+
+```bash
+modal deploy run_whisperx.py
+```
+
+### Deploy Slack bot
+
 ```bash
 docker run \
  -e SLACK_BOT_TOKEN='<YOUR_SLACK_BOT_TOKEN>' \
  -e SLACK_APP_TOKEN='<SLACK_APP_TOKEN>' \
  -e SLACK_BOT_CHANNEL='<SLACK_BOT_CHANNEL_ID>'  \
+ -e SLACK_SIGNING_SECRET='<SLACK_SIGNING_SECRET>' \
  -e MODAL_TOKEN_ID='<MODAL_TOKEN_ID>' \
- -e MODAL_TOKEN='<MODAL_TOKEN_SECRET>' \
+ -e MODAL_TOKEN_SECRET='<MODAL_TOKEN_SECRET>' \
  ghcr.io/drjuchunkoo/transpal-transcriber:latest
 ```
 
@@ -53,8 +66,14 @@ docker run \
 - `SLACK_BOT_TOKEN` - Slack bot token
 - `SLACK_APP_TOKEN` - Slack app token
 - `SLACK_BOT_CHANNEL` - Watch channel for the bot
-- `MODAL_TOKEN_ID` - [Modal](https://modal.com/) token id
-- `MODAL_TOKEN_SECRET` - [Modal](https://modal.com/) token secret
+- `SLACK_SIGNING_SECRET` - Slack signing secret
+
+#### Modal
+
+Get the token id and secret from the `https://modal.com/settings/<user>/tokens`
+
+- `MODAL_TOKEN_ID` - Modal token id
+- `MODAL_TOKEN_SECRET` - Modal token secret
 
 ## Tech Stack
 
