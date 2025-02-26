@@ -80,7 +80,7 @@ def transcribe(audio_url, bot_token):
     result = model.transcribe(
         audio, batch_size=batch_size, language="zh", chunk_size=4)
     print("Transcription done")
-    transcribe_time = time.time() - start_time - download_time-transcode_time
+    transcribe_time = time.time() - start_time - download_time - transcode_time
 
     # 2. Assign speaker labels
     diarize_segments = diarize_model(audio)
@@ -90,7 +90,7 @@ def transcribe(audio_url, bot_token):
     print("Diarization done")
 
     diarize_time = time.time() - start_time - transcribe_time - \
-        start_time - download_time-transcode_time
+        download_time - transcode_time
 
     print(f"Transcribe time: {transcribe_time:.2f}s")
     print(f"Diarize time: {diarize_time:.2f}s")
