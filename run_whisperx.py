@@ -35,7 +35,7 @@ cache_vol = modal.Volume.from_name("whisper-cache", create_if_missing=True)
     gpu=GPU_CONFIG,
     volumes={CACHE_DIR: cache_vol},
     allow_concurrent_inputs=1,
-    scaledown_window=60 * 2,
+    scaledown_window=30,
     timeout=60 * 60,
     secrets=[modal.Secret.from_name("my-huggingface-secret")],
 )
