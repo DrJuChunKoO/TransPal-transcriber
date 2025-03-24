@@ -38,7 +38,6 @@ def handle_message_events(body):
     # check file extension
     filename = body["event"]["files"][0]["name"]
     file_url = body["event"]["files"][0]["url_private_download"]
-    file_extension = filename.split(".")[-1]
 
     try:
         start_time = time.time()
