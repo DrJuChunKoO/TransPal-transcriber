@@ -61,35 +61,32 @@ def transcribe(audio_url, bot_token):
 
     batch_size = 16  # reduce if low on GPU mem
 
+    # Download
     response = requests.get(audio_url, headers={
         "Authorization": f"Bearer {bot_token}"})
-    # Save the audio file locally
     with open("downloaded_audio.wav", "wb") as audio_file:
         audio_file.write(response.content)
-
     download_time = time.time() - start_time
-    print(f"Download time: {download_time:.2f}s")
 
-    # Changed from audio_file to the actual file path
+    # Transcode
+    transcode_start = time.time()
     audio = whisperx.load_audio("downloaded_audio.wav")
+    transcode_time = time.time() - transcode_start
 
-    transcode_time = time.time() - start_time - download_time
-
-    # 1. Transcribe audio to text
+    # Transcribe
+    transcribe_start = time.time()
     result = model.transcribe(audio, batch_size=batch_size)
     print("Transcription done")
-    transcribe_time = time.time() - start_time - download_time - transcode_time
+    transcribe_time = time.time() - transcribe_start
 
-    # 2. Assign speaker labels
+    # Diarize
+    diarize_start = time.time()
     diarize_segments = diarize_model(audio, min_speakers=2)
     result = whisperx.assign_word_speakers(diarize_segments, result)
+    diarize_time = time.time() - diarize_start
 
-    print(diarize_segments)
-    print("Diarization done")
-
-    diarize_time = time.time() - start_time - transcribe_time - \
-        download_time - transcode_time
-
+    print(f"Download time: {download_time:.2f}s")
+    print(f"Transcode time: {transcode_time:.2f}s")
     print(f"Transcribe time: {transcribe_time:.2f}s")
     print(f"Diarize time: {diarize_time:.2f}s")
     print(f"Total time: {time.time() - start_time:.2f}s")
