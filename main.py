@@ -129,9 +129,11 @@ def handle_message_events(body):
             thread_ts=thread_ts,
         )
         app.client.files_upload_v2(
-            channel_ids=[channel_id],
             file=result_filename,
+            title=f"轉錄結果 - {filename}",
+            channel=channel_id,
             thread_ts=thread_ts,
+            initial_comment="以下是音訊檔案的轉錄結果："
         )
         # remove the result file
         if os.path.exists(result_filename):
