@@ -81,9 +81,6 @@ def transcribe(audio_url, bot_token):
     transcode_start = time.time()
     audio, sr = librosa.load("downloaded_audio.wav", sr=16000)
     # 預處理
-    # - 分離人聲和噪音
-    harmonic, percussive = librosa.effects.hpss(audio)
-    audio = harmonic  # 保留諧波部分(人聲)
     # - 增強高頻
     audio = librosa.effects.preemphasis(audio)
     # -  正規化
