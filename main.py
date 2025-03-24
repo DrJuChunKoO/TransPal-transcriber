@@ -129,7 +129,7 @@ def handle_message_events(body):
             thread_ts=thread_ts,
         )
         app.client.files_upload_v2(
-            channels=channel_id,
+            channel_ids=[channel_id],
             file=result_filename,
             thread_ts=thread_ts,
         )
