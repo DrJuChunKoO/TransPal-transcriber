@@ -19,9 +19,10 @@ image = (
         index_url="https://download.pytorch.org/whl/cu118",
     )
     .pip_install(
+        "ctranslate2==4.4.0",
+        "transformers==4.48.0",
         "git+https://github.com/Hasan-Naseer/whisperX.git@release/latest-faster-whisper-version",
         "ffmpeg-python",
-        "ctranslate2==4.4.0",
         "librosa",
     )
 )
