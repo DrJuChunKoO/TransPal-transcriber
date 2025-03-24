@@ -34,8 +34,8 @@ cache_vol = modal.Volume.from_name("whisper-cache", create_if_missing=True)
 @app.function(
     gpu=GPU_CONFIG,
     volumes={CACHE_DIR: cache_vol},
-    allow_concurrent_inputs=15,
-    container_idle_timeout=60 * 10,
+    allow_concurrent_inputs=1,
+    scaledown_window=60 * 2,
     timeout=60 * 60,
     secrets=[modal.Secret.from_name("my-huggingface-secret")],
 )
@@ -52,7 +52,6 @@ def transcribe(audio_url, bot_token):
 
     # 1. Transcribe with original whisper (batched)
     model = whisperx.load_model("large-v3", device, compute_type=compute_type, download_root=CACHE_DIR, asr_options={
-        "initial_prompt": "請使用台灣中文，並加入標點符號",
         "no_speech_threshold": 0.5,
         "compression_ratio_threshold": 2.2,
     })
@@ -77,13 +76,12 @@ def transcribe(audio_url, bot_token):
     transcode_time = time.time() - start_time - download_time
 
     # 1. Transcribe audio to text
-    result = model.transcribe(
-        audio, batch_size=batch_size, language="zh", chunk_size=4)
+    result = model.transcribe(audio, batch_size=batch_size)
     print("Transcription done")
     transcribe_time = time.time() - start_time - download_time - transcode_time
 
     # 2. Assign speaker labels
-    diarize_segments = diarize_model(audio)
+    diarize_segments = diarize_model(audio, min_speakers=2)
     result = whisperx.assign_word_speakers(diarize_segments, result)
 
     print(diarize_segments)
